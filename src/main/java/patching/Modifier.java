@@ -3,6 +3,8 @@ package patching;
 import javassist.*;
 
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 
 public class Modifier
 {
@@ -11,11 +13,14 @@ public class Modifier
 	public Modifier()
 	{
 		pool = ClassPool.getDefault();
+
+		List<GeneratedCode> code = new ArrayList<>();
+		if (!GeneratedCode.parseFile("Testing", code))
+			throw new IllegalStateException("Failed to load test code");
 	}
 
 	public byte[] modify(String className, String[] methodsToPoison)
 	{
-
 		try
 		{
 			CtClass original = pool.get(className);
@@ -37,11 +42,11 @@ public class Modifier
 								"if (o != null) System.out.print(" + printObjectO + ");" +
 								"for (int i = 1; i < args.length; i++)" +
 								"{" +
-									"Object o = args[i];" +
-									"System.out.print(\", \" + " + printObjectO + ");" +
+								"Object o = args[i];" +
+								"System.out.print(\", \" + " + printObjectO + ");" +
 								"}" +
 								"System.out.println(\")\");" +
-							"}"
+								"}"
 						);
 
 						System.out.printf("done\n");

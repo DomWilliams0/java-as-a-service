@@ -18,7 +18,7 @@ public class StupidPatcher implements ClassFileTransformer
 	{
 		modifier = new Modifier();
 
-		classToPoison = "java/lang/String";
+//		classToPoison = "java/lang/String";
 		methodsToPoison = new String[]{"substring", "charAt"};
 	}
 
