@@ -1,39 +1,36 @@
 package patching;
 
+import javassist.CtMethod;
+
 import java.lang.instrument.ClassFileTransformer;
 import java.lang.instrument.IllegalClassFormatException;
 import java.lang.instrument.Instrumentation;
 import java.lang.instrument.UnmodifiableClassException;
 import java.security.ProtectionDomain;
 import java.util.Arrays;
+import java.util.function.Predicate;
 
 public class StupidPatcher implements ClassFileTransformer
 {
 	private Modifier modifier;
 
-	private String classToPoison;
-	private String[] methodsToPoison;
+	private Predicate<String> patchedClassPredicate;
+	private Predicate<CtMethod> poisonedMethodPredicate;
 
-	public StupidPatcher()
+	public StupidPatcher(Predicate<String> patchedClassPredicate, Predicate<CtMethod> poisonedMethodPredicate)
 	{
-		modifier = new Modifier();
-
-//		classToPoison = "java/lang/String";
-		methodsToPoison = new String[]{"substring", "charAt"};
+		this.patchedClassPredicate = patchedClassPredicate;
+		this.poisonedMethodPredicate = poisonedMethodPredicate;
+		this.modifier = new Modifier();
 	}
 
 	public static void premain(String agentArgument, final Instrumentation instrumentation)
 	{
-		StupidPatcher patcher = new StupidPatcher();
-		instrumentation.addTransformer(patcher, true);
+		Predicate<String> patchedClassPredicate = new PatchedClassPredicate();
+		Predicate<CtMethod> poisonedMethodPredicate = new PoisonedMethodPredicate();
 
-		try
-		{
-			instrumentation.retransformClasses(System.class);
-		} catch (UnmodifiableClassException e)
-		{
-			e.printStackTrace();
-		}
+		StupidPatcher patcher = new StupidPatcher(patchedClassPredicate, poisonedMethodPredicate);
+		instrumentation.addTransformer(patcher, true);
 
 		Arrays.stream(instrumentation.getAllLoadedClasses())
 			.filter(instrumentation::isModifiableClass)
@@ -42,10 +39,10 @@ public class StupidPatcher implements ClassFileTransformer
 				try
 				{
 					instrumentation.retransformClasses(classes);
-				} catch (UnmodifiableClassException e)
-				{
-					e.printStackTrace();
-				}
+				} catch (Exception e)
+				 {
+					 e.printStackTrace();
+				 }
 			});
 
 	}
@@ -54,11 +51,31 @@ public class StupidPatcher implements ClassFileTransformer
 	                        final Class classBeingRedefined, final ProtectionDomain protectionDomain,
 	                        final byte[] classfileBuffer) throws IllegalClassFormatException
 	{
-		if (className.equals(classToPoison))
+		if (patchedClassPredicate.test(className))
 		{
-			return modifier.modify(className.replace("/", "."), methodsToPoison);
+			return modifier.modify(className.replace("/", "."), poisonedMethodPredicate);
 		}
 
 		return null;
+	}
+
+	// inline lambdas seem to kill the JVM, wew
+	static class PatchedClassPredicate implements Predicate<String>
+	{
+		@Override
+		public boolean test(String className)
+		{
+			return "java/lang/String".equals(className);
+		}
+	}
+
+	static class PoisonedMethodPredicate implements Predicate<CtMethod>
+	{
+
+		@Override
+		public boolean test(CtMethod method)
+		{
+			return "substring".equals(method.getName());
+		}
 	}
 }

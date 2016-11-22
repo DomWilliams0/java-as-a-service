@@ -4,7 +4,9 @@ import javassist.*;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
+import java.util.function.Predicate;
 
 public class Modifier
 {
@@ -17,18 +19,17 @@ public class Modifier
 		List<GeneratedCode> code = new ArrayList<>();
 		if (!GeneratedCode.parseFile("Testing", code))
 			throw new IllegalStateException("Failed to load test code");
+		System.out.printf("Loaded %d code snippets\n", code.size());
 	}
 
-	public byte[] modify(String className, String[] methodsToPoison)
+	public byte[] modify(String className, Predicate<CtMethod> poisonPredicate)
 	{
 		try
 		{
 			CtClass original = pool.get(className);
-
-			for (String name : methodsToPoison)
-			{
-				CtMethod[] overloadedMethods = original.getDeclaredMethods(name);
-				for (CtMethod method : overloadedMethods)
+			Arrays.stream(original.getDeclaredMethods())
+				.filter(poisonPredicate)
+				.forEach(method ->
 				{
 					System.out.printf("Poisoning %s ... ", method.getLongName());
 					try
@@ -54,8 +55,8 @@ public class Modifier
 					{
 						System.out.printf("FAILED (%s)\n", e.getReason());
 					}
-				}
-			}
+				});
+
 			try
 			{
 				return original.toBytecode();
