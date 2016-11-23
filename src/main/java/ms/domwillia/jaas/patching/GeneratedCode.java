@@ -5,19 +5,26 @@ import java.io.IOException;
 import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Paths;
-import java.util.List;
+import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 public class GeneratedCode
 {
-	private static final Pattern capturePattern = Pattern.compile("(//)\\s*#([A-Z]+)\\s*(\\n)");
+	private static final Pattern capturePattern = Pattern.compile("(//)\\s*#([A-Z]+)(?: )?([a-zA-Z0-9]+)?\\s*(\\n)");
 
+	private final String identifier;
 	private final String code;
 
-	private GeneratedCode(String code)
+	private GeneratedCode(String identifier, String code)
 	{
+		this.identifier = identifier;
 		this.code = code;
+	}
+
+	public String getIdentifier()
+	{
+		return identifier;
 	}
 
 	public String getCode()
@@ -25,7 +32,16 @@ public class GeneratedCode
 		return code;
 	}
 
-	public static boolean parseFile(String fileName, List<GeneratedCode> parsedCode)
+	@Override
+	public String toString()
+	{
+		return "GeneratedCode{" +
+			"identifier='" + identifier + '\'' +
+			", code='" + code + '\'' +
+			'}';
+	}
+
+	public static boolean parseFile(String fileName, Map<String, GeneratedCode> parsedCode)
 	{
 		try
 		{
@@ -37,6 +53,7 @@ public class GeneratedCode
 			Matcher matcher = capturePattern.matcher(file);
 
 			int start = 0, end = 0;
+			String identifier = null;
 
 			while (matcher.find())
 			{
@@ -56,9 +73,16 @@ public class GeneratedCode
 
 				// set marker
 				if (matchesBegin)
-					start = matcher.start(3);
-				else
+				{
+					identifier = matcher.group(3);
+					if (identifier == null)
+						throw new IllegalStateException("Missing identifier");
+
+					start = matcher.start(4);
+				} else
+				{
 					end = matcher.start(1);
+				}
 
 				// both markers not yet set
 				if (start == 0 || end == 0)
@@ -66,7 +90,7 @@ public class GeneratedCode
 
 				// deal with code
 				String code = "{\n" + file.substring(start, end) + "\n}";
-				parsedCode.add(new GeneratedCode(code));
+				parsedCode.put(identifier, new GeneratedCode(identifier, code));
 
 				// reset markers
 				start = end = 0;

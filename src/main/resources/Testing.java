@@ -4,7 +4,7 @@ public class Testing
 {
 	void testCode()
 	{
-		// #BEGIN
+		// #BEGIN test
 
 		System.out.println("this is some test code!");
 		for (int i = 0; i < 5; i++)

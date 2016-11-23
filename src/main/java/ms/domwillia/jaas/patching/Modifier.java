@@ -3,9 +3,7 @@ package ms.domwillia.jaas.patching;
 import javassist.*;
 
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
+import java.util.*;
 import java.util.function.Predicate;
 
 public class Modifier
@@ -16,9 +14,10 @@ public class Modifier
 	{
 		pool = ClassPool.getDefault();
 
-		List<GeneratedCode> code = new ArrayList<>();
+		Map<String, GeneratedCode> code = new HashMap<>();
 		if (!GeneratedCode.parseFile("Testing", code))
 			throw new IllegalStateException("Failed to load test code");
+
 		System.out.printf("Loaded %d code snippets\n", code.size());
 	}
 
