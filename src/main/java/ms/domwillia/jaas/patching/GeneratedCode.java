@@ -1,4 +1,4 @@
-package patching;
+package ms.domwillia.jaas.patching;
 
 import java.io.FileNotFoundException;
 import java.io.IOException;

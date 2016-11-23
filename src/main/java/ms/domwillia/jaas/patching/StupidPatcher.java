@@ -1,11 +1,10 @@
-package patching;
+package ms.domwillia.jaas.patching;
 
 import javassist.CtMethod;
 
 import java.lang.instrument.ClassFileTransformer;
 import java.lang.instrument.IllegalClassFormatException;
 import java.lang.instrument.Instrumentation;
-import java.lang.instrument.UnmodifiableClassException;
 import java.security.ProtectionDomain;
 import java.util.Arrays;
 import java.util.function.Predicate;

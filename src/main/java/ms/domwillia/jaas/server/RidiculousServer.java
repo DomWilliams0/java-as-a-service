@@ -1,4 +1,4 @@
-package server;
+package ms.domwillia.jaas.server;
 
 import com.google.gson.Gson;
 import org.eclipse.jetty.server.Server;

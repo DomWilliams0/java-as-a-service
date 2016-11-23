@@ -1,4 +1,4 @@
-package server;
+package ms.domwillia.jaas.server;
 
 import org.eclipse.jetty.server.Request;
 

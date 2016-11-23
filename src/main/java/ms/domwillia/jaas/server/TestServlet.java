@@ -1,4 +1,4 @@
-package server;
+package ms.domwillia.jaas.server;
 
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;

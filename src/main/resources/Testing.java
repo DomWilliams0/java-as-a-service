@@ -1,4 +1,4 @@
-package patching.code;
+package ms.domwillia.jaas.patching.code;
 
 public class Testing
 {

@@ -1,4 +1,4 @@
-package patching;
+package ms.domwillia.jaas.patching;
 
 import javassist.*;
 
